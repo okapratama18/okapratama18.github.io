@@ -2,188 +2,173 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Jam Hologram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Environment Clock</title>
 
 <style>
-:root{
-  --blue:#00eaff;
-  --glow:0 0 14px #00eaff,0 0 28px #0077ff;
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-*{box-sizing:border-box;margin:0;padding:0;font-family:Orbitron,sans-serif}
-
-body{
-  background:radial-gradient(circle,#001d2b,#000);
-  color:var(--blue);
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
+body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-/* ===== LAYOUT FIX HP ===== */
-.container{
-  display:flex;
-  flex-direction:row;
-  width:100%;
-  height:100%;
-  padding:12px;
-  gap:12px;
+/* FRAME */
+.screen {
+    width: 95vw;
+    max-width: 520px;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, #1fae78, #1b7f6b);
+    border-radius: 14px;
+    padding: 12px;
+    color: #eafff8;
 }
 
-/* KIRI (JAM) */
-.left{
-  flex:1.6;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:flex-start;
-  min-width:0;
+/* HEADER */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.clock{
-  font-size:clamp(3.2rem,10vw,5.2rem);
-  letter-spacing:4px;
-  text-shadow:var(--glow);
-  white-space:nowrap;
+.sun {
+    font-size: 26px;
 }
 
-.date{
-  margin-top:10px;
-  font-size:clamp(0.9rem,3vw,1.2rem);
-  opacity:.85;
+.header-text {
+    font-size: 12px;
+    line-height: 1.2;
 }
 
-/* KANAN (PANEL) */
-.right{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+.wifi {
+    font-size: 18px;
 }
 
-.panel{
-  border:1px solid rgba(0,234,255,.4);
-  border-radius:12px;
-  padding:8px 10px;
-  background:rgba(0,40,60,.3);
-  box-shadow:var(--glow);
+/* GRID */
+.grid {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
 }
 
-.label{
-  font-size:.75rem;
-  opacity:.75;
+.card {
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
 }
 
-.value{
-  font-size:1.15rem;
-  margin-top:3px;
-  text-shadow:var(--glow);
+.icon {
+    font-size: 24px;
 }
 
-/* scan hologram */
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.04),
-    rgba(255,255,255,.04) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-  pointer-events:none;
-  animation:scan 6s linear infinite;
+.value {
+    font-size: 18px;
+    font-weight: bold;
 }
 
-@keyframes scan{
-  from{background-position-y:0}
-  to{background-position-y:100%}
+.unit {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* CLOCK */
+.clock {
+    text-align: center;
+    margin-top: 6px;
+    font-size: 22px;
+    font-weight: bold;
 }
 </style>
 </head>
 
 <body>
-<div class="container">
 
-  <div class="left">
+<div class="screen">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="sun">☀️</div>
+        <div class="header-text">
+            <div id="day">day</div>
+            <div id="uptime">- 0 hrs. 0 min</div>
+        </div>
+        <div class="wifi">📶</div>
+    </div>
+
+    <!-- CLOCK -->
     <div class="clock" id="clock">00:00:00</div>
-    <div class="date" id="date">-</div>
-  </div>
 
-  <div class="right">
-    <div class="panel">
-      <div class="label">🌤 Cuaca</div>
-      <div class="value" id="weather">Memuat...</div>
+    <!-- GRID -->
+    <div class="grid">
+        <div class="card">
+            <div class="icon">🌡️</div>
+            <div class="value" id="temp">--</div>
+            <div class="unit">°C</div>
+        </div>
+
+        <div class="card">
+            <div class="icon">🌬️</div>
+            <div class="value" id="pressure">--</div>
+            <div class="unit">kPa</div>
+        </div>
+
+        <div class="card">
+            <div class="icon">🌀</div>
+            <div class="value" id="fan">--</div>
+            <div class="unit">%</div>
+        </div>
+
+        <div class="card">
+            <div class="icon">💧</div>
+            <div class="value" id="humidity">--</div>
+            <div class="unit">%</div>
+        </div>
+
+        <div class="card">
+            <div class="icon">🌫️</div>
+            <div class="value" id="co2">--</div>
+            <div class="unit">ppm</div>
+        </div>
     </div>
-
-    <div class="panel">
-      <div class="label">📍 Lokasi GPS</div>
-      <div class="value" id="gps">-</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">🫁 Oksigen</div>
-      <div class="value" id="oxygen">20.0%</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">⛰ Ketinggian</div>
-      <div class="value">800 mdpl</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">🌡 Suhu</div>
-      <div class="value" id="temp">--°C</div>
-    </div>
-  </div>
-
 </div>
 
 <script>
-/* JAM */
-function updateTime(){
-  const n=new Date();
-  clock.textContent=n.toLocaleTimeString('id-ID');
-  date.textContent=n.toLocaleDateString('id-ID',{
-    weekday:'long',year:'numeric',month:'long',day:'numeric'
-  });
+/* CLOCK */
+function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').innerText = `${h}:${m}:${s}`;
 }
-setInterval(updateTime,1000);updateTime();
+setInterval(updateClock, 1000);
+updateClock();
 
-/* GPS + CUACA */
-navigator.geolocation.getCurrentPosition(pos=>{
-  const lat=pos.coords.latitude.toFixed(5);
-  const lon=pos.coords.longitude.toFixed(5);
-  gps.textContent=lat+', '+lon;
+/* DAY / NIGHT */
+const hour = new Date().getHours();
+document.getElementById('day').innerText = hour >= 6 && hour < 18 ? "day" : "night";
 
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
-    .then(r=>r.json())
-    .then(d=>{
-      weather.textContent=
-        (d.current_weather.weathercode===3?'Mendung':'Cuaca')+
-        ' | '+d.current_weather.temperature+'°C';
-      temp.textContent=d.current_weather.temperature+'°C';
-    });
-});
-
-/* OKSIGEN */
-let o=20;
-setInterval(()=>{
-  o+=(Math.random()-.5)*.3;
-  o=Math.min(21.1,Math.max(19,o));
-  oxygen.textContent=o.toFixed(1)+'%';
-},1200);
-
-/* WAKE LOCK */
-let wakeLock=null;
-async function lock(){
-  try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){}
+/* FAKE SENSOR DATA (SIMULASI) */
+function random(min, max) {
+    return (Math.random() * (max - min) + min).toFixed(1);
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')lock()});
-lock();
+
+setInterval(() => {
+    document.getElementById('temp').innerText = random(26, 34);
+    document.getElementById('pressure').innerText = random(98, 102);
+    document.getElementById('fan').innerText = random(20, 80);
+    document.getElementById('humidity').innerText = random(50, 90);
+    document.getElementById('co2').innerText = Math.floor(random(400, 900));
+}, 2000);
 </script>
+
 </body>
 </html>
-

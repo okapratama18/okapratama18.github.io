@@ -2,21 +2,16 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Jam Digital Hologram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jam Hologram</title>
 
 <style>
 :root{
   --blue:#00eaff;
-  --glow:0 0 16px #00eaff,0 0 32px #0077ff;
+  --glow:0 0 14px #00eaff,0 0 28px #0077ff;
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Orbitron',sans-serif;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Orbitron,sans-serif}
 
 body{
   background:radial-gradient(circle,#001d2b,#000);
@@ -26,73 +21,67 @@ body{
   overflow:hidden;
 }
 
+/* ===== LAYOUT FIX HP ===== */
 .container{
-  display:grid;
-  grid-template-columns:2.3fr 1fr;
+  display:flex;
+  flex-direction:row;
+  width:100%;
   height:100%;
-  padding:20px;
+  padding:12px;
+  gap:12px;
 }
 
+/* KIRI (JAM) */
 .left{
+  flex:1.6;
   display:flex;
   flex-direction:column;
   justify-content:center;
+  align-items:flex-start;
+  min-width:0;
 }
 
-/* JAM DIPERBESAR */
 .clock{
-  font-size:6.2rem;
-  letter-spacing:6px;
+  font-size:clamp(3.2rem,10vw,5.2rem);
+  letter-spacing:4px;
   text-shadow:var(--glow);
+  white-space:nowrap;
 }
 
 .date{
-  font-size:1.3rem;
-  margin-top:14px;
+  margin-top:10px;
+  font-size:clamp(0.9rem,3vw,1.2rem);
   opacity:.85;
 }
 
+/* KANAN (PANEL) */
 .right{
-  display:grid;
-  grid-template-rows:repeat(6,1fr);
-  gap:10px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
 .panel{
   border:1px solid rgba(0,234,255,.4);
-  border-radius:14px;
-  padding:10px 12px;
-  background:rgba(0,40,60,.25);
+  border-radius:12px;
+  padding:8px 10px;
+  background:rgba(0,40,60,.3);
   box-shadow:var(--glow);
 }
 
 .label{
-  font-size:.8rem;
+  font-size:.75rem;
   opacity:.75;
-  animation:pulse 2.5s infinite;
 }
 
 .value{
-  font-size:1.3rem;
-  margin-top:4px;
+  font-size:1.15rem;
+  margin-top:3px;
   text-shadow:var(--glow);
 }
 
-canvas{
-  width:100%;
-  height:60px;
-  margin-top:6px;
-  filter:drop-shadow(0 0 6px #00eaff);
-}
-
-/* animasi hologram */
-@keyframes pulse{
-  0%{opacity:.6;text-shadow:0 0 4px #00eaff;}
-  50%{opacity:1;text-shadow:0 0 14px #00eaff;}
-  100%{opacity:.6;text-shadow:0 0 4px #00eaff;}
-}
-
-/* scan line */
+/* scan hologram */
 body::after{
   content:"";
   position:fixed;
@@ -109,8 +98,8 @@ body::after{
 }
 
 @keyframes scan{
-  from{background-position-y:0;}
-  to{background-position-y:100%;}
+  from{background-position-y:0}
+  to{background-position-y:100%}
 }
 </style>
 </head>
@@ -118,15 +107,12 @@ body::after{
 <body>
 <div class="container">
 
-  <!-- KIRI -->
   <div class="left">
     <div class="clock" id="clock">00:00:00</div>
     <div class="date" id="date">-</div>
   </div>
 
-  <!-- KANAN -->
   <div class="right">
-
     <div class="panel">
       <div class="label">🌤 Cuaca</div>
       <div class="value" id="weather">Memuat...</div>
@@ -134,11 +120,11 @@ body::after{
 
     <div class="panel">
       <div class="label">📍 Lokasi GPS</div>
-      <div class="value" id="gps">Menunggu...</div>
+      <div class="value" id="gps">-</div>
     </div>
 
     <div class="panel">
-      <div class="label">🫁 Oksigen (O₂)</div>
+      <div class="label">🫁 Oksigen</div>
       <div class="value" id="oxygen">20.0%</div>
     </div>
 
@@ -149,15 +135,14 @@ body::after{
 
     <div class="panel">
       <div class="label">🌡 Suhu</div>
-      <div class="value" id="temp">--% | --°C</div>
-      <canvas id="tempChart" width="200" height="60"></canvas>
+      <div class="value" id="temp">--°C</div>
     </div>
-
   </div>
+
 </div>
 
 <script>
-/* JAM & TANGGAL */
+/* JAM */
 function updateTime(){
   const n=new Date();
   clock.textContent=n.toLocaleTimeString('id-ID');
@@ -165,74 +150,40 @@ function updateTime(){
     weekday:'long',year:'numeric',month:'long',day:'numeric'
   });
 }
-setInterval(updateTime,1000); updateTime();
+setInterval(updateTime,1000);updateTime();
 
-/* GPS + CUACA ASLI */
+/* GPS + CUACA */
 navigator.geolocation.getCurrentPosition(pos=>{
   const lat=pos.coords.latitude.toFixed(5);
   const lon=pos.coords.longitude.toFixed(5);
   gps.textContent=lat+', '+lon;
 
   fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
-  .then(r=>r.json())
-  .then(d=>{
-    const t=d.current_weather.temperature;
-    const code=d.current_weather.weathercode;
-    const kondisi={
-      0:'Cerah',1:'Cerah',2:'Berawan',3:'Mendung',
-      45:'Kabut',48:'Kabut',
-      51:'Gerimis',61:'Hujan',80:'Hujan Ringan'
-    };
-    weather.textContent=(kondisi[code]||'Cuaca')+' | '+t+'°C';
-    tempC=t;
-  });
+    .then(r=>r.json())
+    .then(d=>{
+      weather.textContent=
+        (d.current_weather.weathercode===3?'Mendung':'Cuaca')+
+        ' | '+d.current_weather.temperature+'°C';
+      temp.textContent=d.current_weather.temperature+'°C';
+    });
 });
 
 /* OKSIGEN */
-let oxygen=20.0;
+let o=20;
 setInterval(()=>{
-  oxygen+=(Math.random()-.5)*.3;
-  oxygen=Math.min(21.1,Math.max(19,oxygen));
-  oxygenEl.textContent=oxygen.toFixed(1)+'%';
+  o+=(Math.random()-.5)*.3;
+  o=Math.min(21.1,Math.max(19,o));
+  oxygen.textContent=o.toFixed(1)+'%';
 },1200);
-
-/* SUHU + GRAFIK */
-const canvas=document.getElementById('tempChart');
-const ctx=canvas.getContext('2d');
-let tempPercent=65;
-let tempC=32;
-let history=Array(30).fill(tempC);
-
-function drawChart(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath();
-  ctx.strokeStyle='#00eaff';
-  ctx.lineWidth=2;
-  ctx.shadowColor='#00eaff';
-  ctx.shadowBlur=10;
-  history.forEach((v,i)=>{
-    const x=i/(history.length-1)*canvas.width;
-    const y=canvas.height-((v-20)/20)*canvas.height;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  });
-  ctx.stroke();
-}
-
-setInterval(()=>{
-  tempPercent+=(Math.random()-.5)*4;
-  tempPercent=Math.min(85,Math.max(40,tempPercent));
-  history.push(tempC); history.shift();
-  temp.textContent=Math.round(tempPercent)+'% | '+tempC.toFixed(1)+'°C';
-  drawChart();
-},1500);
 
 /* WAKE LOCK */
 let wakeLock=null;
 async function lock(){
   try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){}
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')lock();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')lock()});
 lock();
 </script>
 </body>
 </html>
+

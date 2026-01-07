@@ -2,17 +2,26 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <title>JARVIS SYSTEM</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
+:root{
+  --main:#00f6ff;
+}
+
+*{
+  box-sizing:border-box;
+}
+
 body {
   margin: 0;
-  background: radial-gradient(circle at center, #061826, #000);
+  background: radial-gradient(circle, #061826, #000);
   font-family: 'Share Tech Mono', monospace;
-  color: #00f6ff;
+  color: var(--main);
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -20,79 +29,92 @@ body {
   overflow: hidden;
 }
 
-/* Scan Effect */
-body::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 2px;
-  background: rgba(0,246,255,0.3);
-  top: -2px;
-  animation: scan 4s linear infinite;
+/* Scan hologram */
+body::after{
+  content:"";
+  position:absolute;
+  width:100%;
+  height:2px;
+  background:rgba(0,246,255,.25);
+  top:-2px;
+  animation:scan 4s linear infinite;
+}
+@keyframes scan{
+  to{ top:100%; }
 }
 
-@keyframes scan {
-  from { top: -2px; }
-  to { top: 100%; }
+.jarvis{
+  width:100%;
+  max-width:720px;
+  height:100%;
+  max-height:420px;
+  padding:clamp(12px,3vw,24px);
+  border:2px solid var(--main);
+  box-shadow:0 0 30px var(--main) inset;
+  display:grid;
+  grid-template-rows:auto auto auto auto auto;
+  gap:clamp(8px,2vw,14px);
 }
 
-.jarvis {
-  width: 95vw;
-  max-width: 560px;
-  padding: 25px;
-  border: 2px solid #00f6ff;
-  box-shadow: 0 0 30px #00f6ff inset;
-  text-shadow: 0 0 10px #00f6ff;
+.section{
+  border-bottom:1px dashed var(--main);
+  padding-bottom:6px;
 }
 
-.section {
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed #00f6ff;
+.label{
+  font-size:clamp(10px,2.5vw,12px);
+  opacity:.6;
 }
 
-.label {
-  opacity: 0.6;
-  font-size: 0.8rem;
+.clock{
+  font-size:clamp(36px,12vw,64px);
+  letter-spacing:clamp(2px,1vw,4px);
 }
 
-.clock {
-  font-size: 3.5rem;
-  letter-spacing: 4px;
+.day{
+  font-size:clamp(16px,4vw,22px);
 }
 
-.day {
-  font-size: 1.4rem;
+.full-date{
+  font-size:clamp(12px,3vw,14px);
+  opacity:.8;
 }
 
-.full-date {
-  font-size: 0.9rem;
-  opacity: 0.85;
+.progress{
+  margin-top:4px;
+  height:clamp(6px,1.5vw,10px);
+  border:1px solid var(--main);
 }
 
-/* Progress bar */
-.progress {
-  margin-top: 6px;
-  height: 10px;
-  border: 1px solid #00f6ff;
-}
-.progress-fill {
-  height: 100%;
-  background: #00f6ff;
-  width: 0%;
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:var(--main);
 }
 
-.countdown {
-  font-size: 1.1rem;
+.countdown{
+  font-size:clamp(14px,4vw,18px);
 }
 
-@keyframes flicker {
-  0% { opacity: 1; }
-  50% { opacity: 0.85; }
-  100% { opacity: 1; }
+@keyframes flicker{
+  50%{opacity:.85;}
 }
-.flicker {
-  animation: flicker 1.5s infinite;
+.flicker{
+  animation:flicker 1.5s infinite;
+}
+
+/* LANDSCAPE HP */
+@media (orientation: landscape){
+  .jarvis{
+    max-height:100%;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:auto auto auto;
+  }
+  .section{
+    border-bottom:none;
+    border-right:1px dashed var(--main);
+    padding-right:8px;
+  }
 }
 </style>
 </head>
@@ -111,7 +133,7 @@ body::after {
     <div class="day flicker" id="day">---</div>
     <div class="full-date" id="fullDate">---</div>
     <div class="progress">
-      <div class="progress-fill" id="dayProgress"></div>
+      <div class="progress-fill" id="progress"></div>
     </div>
   </div>
 
@@ -133,56 +155,35 @@ body::after {
 </div>
 
 <script>
-// Jam & Tanggal
-function updateTime() {
-  const now = new Date();
+function update(){
+  const n=new Date();
 
-  document.getElementById("clock").textContent =
-    now.toLocaleTimeString('id-ID');
+  clock.textContent=n.toLocaleTimeString('id-ID');
 
-  document.getElementById("day").textContent =
-    now.toLocaleDateString('id-ID',{weekday:'long'}).toUpperCase();
+  day.textContent=n.toLocaleDateString('id-ID',{weekday:'long'}).toUpperCase();
+  fullDate.textContent=n.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
-  document.getElementById("fullDate").textContent =
-    now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const sec=n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
+  progress.style.width=(sec/86400*100)+"%";
 
-  const secondsToday =
-    now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-  const progress = (secondsToday / 86400) * 100;
-  document.getElementById("dayProgress").style.width = progress + "%";
-
-  const remaining = 86400 - secondsToday;
-  const h = String(Math.floor(remaining/3600)).padStart(2,'0');
-  const m = String(Math.floor((remaining%3600)/60)).padStart(2,'0');
-  const s = String(remaining%60).padStart(2,'0');
-
-  document.getElementById("countdown").textContent =
-    `NEXT_DAY : ${h}:${m}:${s}`;
+  const r=86400-sec;
+  countdown.textContent=`NEXT_DAY : ${String(r/3600|0).padStart(2,0)}:${String((r%3600)/60|0).padStart(2,0)}:${String(r%60).padStart(2,0)}`;
 }
+setInterval(update,1000); update();
 
-setInterval(updateTime,1000);
-updateTime();
-
-// Lokasi & Cuaca
-navigator.geolocation.getCurrentPosition(pos=>{
-  const lat = pos.coords.latitude;
-  const lon = pos.coords.longitude;
-
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+navigator.geolocation.getCurrentPosition(p=>{
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current_weather=true`)
   .then(r=>r.json())
   .then(d=>{
-    document.getElementById("location").textContent =
-      `LAT:${lat.toFixed(2)} | LON:${lon.toFixed(2)}`;
-    document.getElementById("temp").textContent =
-      `TEMP : ${d.current_weather.temperature}°C`;
+    location.textContent=`LAT:${p.coords.latitude.toFixed(2)} | LON:${p.coords.longitude.toFixed(2)}`;
+    temp.textContent=`TEMP : ${d.current_weather.temperature}°C`;
   });
 });
 
-// Anti layar mati (Chrome Android)
-if ('wakeLock' in navigator) {
-  navigator.wakeLock.request('screen');
-}
+// anti sleep
+if('wakeLock' in navigator) navigator.wakeLock.request('screen');
 </script>
 
 </body>
 </html>
+

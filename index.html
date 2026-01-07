@@ -3,171 +3,185 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital Environment Clock</title>
+<title>JARVIS SYSTEM</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
-* {
-    box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
 body {
-    margin: 0;
-    background: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  margin: 0;
+  background: radial-gradient(circle at center, #061826, #000);
+  font-family: 'Share Tech Mono', monospace;
+  color: #00f6ff;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-/* FRAME */
-.screen {
-    width: 95vw;
-    max-width: 520px;
-    aspect-ratio: 16 / 9;
-    background: linear-gradient(135deg, #1fae78, #1b7f6b);
-    border-radius: 14px;
-    padding: 12px;
-    color: #eafff8;
+/* Scan Effect */
+body::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: rgba(0,246,255,0.3);
+  top: -2px;
+  animation: scan 4s linear infinite;
 }
 
-/* HEADER */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+@keyframes scan {
+  from { top: -2px; }
+  to { top: 100%; }
 }
 
-.sun {
-    font-size: 26px;
+.jarvis {
+  width: 95vw;
+  max-width: 560px;
+  padding: 25px;
+  border: 2px solid #00f6ff;
+  box-shadow: 0 0 30px #00f6ff inset;
+  text-shadow: 0 0 10px #00f6ff;
 }
 
-.header-text {
-    font-size: 12px;
-    line-height: 1.2;
+.section {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #00f6ff;
 }
 
-.wifi {
-    font-size: 18px;
+.label {
+  opacity: 0.6;
+  font-size: 0.8rem;
 }
 
-/* GRID */
-.grid {
-    margin-top: 10px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: 10px;
-}
-
-.card {
-    background: rgba(0,0,0,0.25);
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-}
-
-.icon {
-    font-size: 24px;
-}
-
-.value {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.unit {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-/* CLOCK */
 .clock {
-    text-align: center;
-    margin-top: 6px;
-    font-size: 22px;
-    font-weight: bold;
+  font-size: 3.5rem;
+  letter-spacing: 4px;
+}
+
+.day {
+  font-size: 1.4rem;
+}
+
+.full-date {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* Progress bar */
+.progress {
+  margin-top: 6px;
+  height: 10px;
+  border: 1px solid #00f6ff;
+}
+.progress-fill {
+  height: 100%;
+  background: #00f6ff;
+  width: 0%;
+}
+
+.countdown {
+  font-size: 1.1rem;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+.flicker {
+  animation: flicker 1.5s infinite;
 }
 </style>
 </head>
 
 <body>
 
-<div class="screen">
-    <!-- HEADER -->
-    <div class="header">
-        <div class="sun">☀️</div>
-        <div class="header-text">
-            <div id="day">day</div>
-            <div id="uptime">- 0 hrs. 0 min</div>
-        </div>
-        <div class="wifi">📶</div>
+<div class="jarvis">
+
+  <div class="section">
+    <div class="label">SYSTEM.TIME</div>
+    <div class="clock flicker" id="clock">00:00:00</div>
+  </div>
+
+  <div class="section">
+    <div class="label">SYSTEM.DATE</div>
+    <div class="day flicker" id="day">---</div>
+    <div class="full-date" id="fullDate">---</div>
+    <div class="progress">
+      <div class="progress-fill" id="dayProgress"></div>
     </div>
+  </div>
 
-    <!-- CLOCK -->
-    <div class="clock" id="clock">00:00:00</div>
+  <div class="section">
+    <div class="label">SYSTEM.COUNTDOWN</div>
+    <div class="countdown" id="countdown">--:--:--</div>
+  </div>
 
-    <!-- GRID -->
-    <div class="grid">
-        <div class="card">
-            <div class="icon">🌡️</div>
-            <div class="value" id="temp">--</div>
-            <div class="unit">°C</div>
-        </div>
+  <div class="section">
+    <div class="label">SYSTEM.LOCATION</div>
+    <div id="location">Detecting...</div>
+  </div>
 
-        <div class="card">
-            <div class="icon">🌬️</div>
-            <div class="value" id="pressure">--</div>
-            <div class="unit">kPa</div>
-        </div>
+  <div class="section">
+    <div class="label">SYSTEM.WEATHER</div>
+    <div id="temp">--</div>
+  </div>
 
-        <div class="card">
-            <div class="icon">🌀</div>
-            <div class="value" id="fan">--</div>
-            <div class="unit">%</div>
-        </div>
-
-        <div class="card">
-            <div class="icon">💧</div>
-            <div class="value" id="humidity">--</div>
-            <div class="unit">%</div>
-        </div>
-
-        <div class="card">
-            <div class="icon">🌫️</div>
-            <div class="value" id="co2">--</div>
-            <div class="unit">ppm</div>
-        </div>
-    </div>
 </div>
 
 <script>
-/* CLOCK */
-function updateClock() {
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
-    document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+// Jam & Tanggal
+function updateTime() {
+  const now = new Date();
+
+  document.getElementById("clock").textContent =
+    now.toLocaleTimeString('id-ID');
+
+  document.getElementById("day").textContent =
+    now.toLocaleDateString('id-ID',{weekday:'long'}).toUpperCase();
+
+  document.getElementById("fullDate").textContent =
+    now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+
+  const secondsToday =
+    now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+  const progress = (secondsToday / 86400) * 100;
+  document.getElementById("dayProgress").style.width = progress + "%";
+
+  const remaining = 86400 - secondsToday;
+  const h = String(Math.floor(remaining/3600)).padStart(2,'0');
+  const m = String(Math.floor((remaining%3600)/60)).padStart(2,'0');
+  const s = String(remaining%60).padStart(2,'0');
+
+  document.getElementById("countdown").textContent =
+    `NEXT_DAY : ${h}:${m}:${s}`;
 }
-setInterval(updateClock, 1000);
-updateClock();
 
-/* DAY / NIGHT */
-const hour = new Date().getHours();
-document.getElementById('day').innerText = hour >= 6 && hour < 18 ? "day" : "night";
+setInterval(updateTime,1000);
+updateTime();
 
-/* FAKE SENSOR DATA (SIMULASI) */
-function random(min, max) {
-    return (Math.random() * (max - min) + min).toFixed(1);
+// Lokasi & Cuaca
+navigator.geolocation.getCurrentPosition(pos=>{
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+  .then(r=>r.json())
+  .then(d=>{
+    document.getElementById("location").textContent =
+      `LAT:${lat.toFixed(2)} | LON:${lon.toFixed(2)}`;
+    document.getElementById("temp").textContent =
+      `TEMP : ${d.current_weather.temperature}°C`;
+  });
+});
+
+// Anti layar mati (Chrome Android)
+if ('wakeLock' in navigator) {
+  navigator.wakeLock.request('screen');
 }
-
-setInterval(() => {
-    document.getElementById('temp').innerText = random(26, 34);
-    document.getElementById('pressure').innerText = random(98, 102);
-    document.getElementById('fan').innerText = random(20, 80);
-    document.getElementById('humidity').innerText = random(50, 90);
-    document.getElementById('co2').innerText = Math.floor(random(400, 900));
-}, 2000);
 </script>
 
 </body>

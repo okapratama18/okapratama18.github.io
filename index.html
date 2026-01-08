@@ -2,244 +2,125 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Jam Digital Hologram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS Digital Clock</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --blue: #00eaff;
-  --glow: 0 0 12px #00eaff, 0 0 24px #0077ff;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Orbitron', sans-serif;
-}
-
 body {
-  background: radial-gradient(circle at center, #001d2b, #000);
-  color: var(--blue);
-  width: 100vw;
+  margin: 0;
+  background: radial-gradient(circle, #0a1a2a, #000);
+  font-family: 'Share Tech Mono', monospace;
+  color: #00eaff;
   height: 100vh;
-  overflow: hidden;
-}
-
-.container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  height: 100%;
-  padding: 18px;
-  backdrop-filter: blur(10px);
-}
-
-.left {
   display: flex;
-  flex-direction: column;
   justify-content: center;
+  align-items: center;
+}
+
+.jarvis {
+  border: 2px solid #00eaff;
+  padding: 20px 30px;
+  width: 90vw;
+  max-width: 500px;
+  text-shadow: 0 0 10px #00eaff;
+  box-shadow: 0 0 20px #00eaff inset;
+}
+
+.line {
+  margin: 8px 0;
 }
 
 .clock {
-  font-size: 4.5rem;
+  font-size: 3rem;
   letter-spacing: 4px;
-  text-shadow: var(--glow);
 }
 
 .date {
-  font-size: 1.2rem;
-  margin-top: 10px;
-  opacity: 0.85;
+  font-size: 1rem;
+  opacity: 0.8;
 }
 
-.right {
-  display: grid;
-  grid-template-rows: repeat(6, 1fr);
-  gap: 10px;
-}
-
-.panel {
-  border: 1px solid rgba(0,234,255,0.4);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: var(--glow);
-  background: rgba(0,40,60,0.25);
+.section {
+  margin-top: 15px;
+  border-top: 1px dashed #00eaff;
+  padding-top: 10px;
 }
 
 .label {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  animation: pulse 2.5s infinite;
+  opacity: 0.6;
 }
 
-.value {
-  font-size: 1.3rem;
-  margin-top: 4px;
-  text-shadow: var(--glow);
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 
-canvas {
-  width: 100%;
-  height: 60px;
-  margin-top: 6px;
-  filter: drop-shadow(0 0 6px #00eaff);
-}
-
-/* animasi ikon hologram */
-@keyframes pulse {
-  0% { opacity: 0.6; text-shadow: 0 0 4px #00eaff; }
-  50% { opacity: 1; text-shadow: 0 0 14px #00eaff; }
-  100% { opacity: 0.6; text-shadow: 0 0 4px #00eaff; }
-}
-
-/* scan hologram */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.04),
-    rgba(255,255,255,0.04) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-  pointer-events: none;
-  animation: scan 6s linear infinite;
-}
-
-@keyframes scan {
-  from { background-position-y: 0; }
-  to { background-position-y: 100%; }
+.flicker {
+  animation: flicker 1.5s infinite;
 }
 </style>
 </head>
 
 <body>
-<div class="container">
 
-  <!-- KIRI -->
-  <div class="left">
-    <div class="clock" id="clock">00:00:00</div>
-    <div class="date" id="date">-</div>
+<div class="jarvis">
+  <div class="line label">SYSTEM.TIME</div>
+  <div class="clock flicker" id="clock">00:00:00</div>
+  <div class="date" id="date">---</div>
+
+  <div class="section">
+    <div class="line label">SYSTEM.LOCATION</div>
+    <div id="location">Detecting...</div>
   </div>
 
-  <!-- KANAN -->
-  <div class="right">
-
-    <div class="panel">
-      <div class="label">🌤 Cuaca</div>
-      <div class="value">Cerah Berawan</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">📍 Lokasi GPS</div>
-      <div class="value" id="gps">Menunggu...</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">🫁 Oksigen (O₂)</div>
-      <div class="value" id="oxygen">20.0%</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">⛰ Ketinggian</div>
-      <div class="value">800 mdpl</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">🌡 Suhu</div>
-      <div class="value" id="temp">65% | 32°C</div>
-      <canvas id="tempChart" width="200" height="60"></canvas>
-    </div>
-
+  <div class="section">
+    <div class="line label">SYSTEM.WEATHER</div>
+    <div id="weather">Loading...</div>
+    <div id="temp"></div>
   </div>
 </div>
 
 <script>
-/* JAM & TANGGAL */
-function updateTime() {
+function updateClock() {
   const now = new Date();
-  document.getElementById('clock').textContent =
-    now.toLocaleTimeString('id-ID');
-  document.getElementById('date').textContent =
-    now.toLocaleDateString('id-ID', {
-      weekday:'long', year:'numeric', month:'long', day:'numeric'
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById("clock").textContent = `${h}:${m}:${s}`;
+
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById("date").textContent = now.toLocaleDateString('id-ID', options);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Lokasi + Cuaca
+navigator.geolocation.getCurrentPosition(pos => {
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("location").textContent =
+        `LAT:${lat.toFixed(2)} | LON:${lon.toFixed(2)}`;
+
+      document.getElementById("weather").textContent =
+        `STATUS : ${data.current_weather.weathercode}`;
+
+      document.getElementById("temp").textContent =
+        `TEMP   : ${data.current_weather.temperature}°C`;
     });
-}
-setInterval(updateTime,1000);
-updateTime();
-
-/* GPS */
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(pos => {
-    document.getElementById('gps').textContent =
-      pos.coords.latitude.toFixed(5) + ', ' +
-      pos.coords.longitude.toFixed(5);
-  });
-}
-
-/* OKSIGEN */
-let oxygen = 20.0;
-setInterval(() => {
-  oxygen += (Math.random()-0.5)*0.3;
-  oxygen = Math.min(21.1, Math.max(19.0, oxygen));
-  document.getElementById('oxygen').textContent =
-    oxygen.toFixed(1)+'%';
-},1200);
-
-/* SUHU + GRAFIK */
-const canvas = document.getElementById("tempChart");
-const ctx = canvas.getContext("2d");
-
-let tempPercent = 65;
-let tempC = 32;
-let history = Array(30).fill(tempC);
-
-function drawChart() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath();
-  ctx.strokeStyle="#00eaff";
-  ctx.lineWidth=2;
-  ctx.shadowColor="#00eaff";
-  ctx.shadowBlur=10;
-
-  history.forEach((v,i)=>{
-    const x=(i/(history.length-1))*canvas.width;
-    const y=canvas.height-((v-24)/12)*canvas.height;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  });
-  ctx.stroke();
-}
-
-setInterval(()=>{
-  tempPercent += (Math.random()-0.5)*4;
-  tempPercent = Math.min(85, Math.max(40, tempPercent));
-
-  tempC += (Math.random()-0.5)*0.6;
-  tempC = Math.min(36, Math.max(24, tempC));
-
-  history.push(tempC); history.shift();
-
-  document.getElementById("temp").textContent =
-    Math.round(tempPercent)+"% | "+tempC.toFixed(1)+"°C";
-  drawChart();
-},1500);
-
-/* CEGAH LAYAR MATI */
-let wakeLock=null;
-async function aktifkanWakeLock(){
-  try{
-    wakeLock = await navigator.wakeLock.request('screen');
-  }catch(e){}
-}
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible') aktifkanWakeLock();
+}, () => {
+  document.getElementById("location").textContent = "GPS DENIED";
 });
-aktifkanWakeLock();
 </script>
 
 </body>
 </html>
+
 
 

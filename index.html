@@ -1,207 +1,245 @@
-
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Digital Clock Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Jam Digital Hologram</title>
 
 <style>
+:root {
+  --blue: #00eaff;
+  --glow: 0 0 12px #00eaff, 0 0 24px #0077ff;
+}
+
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+  font-family: 'Orbitron', sans-serif;
 }
 
 body {
-  margin: 0;
+  background: radial-gradient(circle at center, #001d2b, #000);
+  color: var(--blue);
   width: 100vw;
   height: 100vh;
-  background: #0b1f17;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: "Segoe UI", sans-serif;
   overflow: hidden;
 }
 
-/* ===== DASHBOARD ===== */
-.dashboard {
-  width: 100%;
+.container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
   height: 100%;
-  max-width: 900px;
-  max-height: 420px;
-  background: linear-gradient(135deg, #1fa36a, #1c7f5a);
-  border-radius: 14px;
-  padding: 16px;
-  color: #fff;
-  box-shadow: 0 15px 40px rgba(0,0,0,.45);
+  padding: 18px;
+  backdrop-filter: blur(10px);
+}
+
+.left {
   display: flex;
   flex-direction: column;
-}
-
-/* ===== TOP ===== */
-.top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sun {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sun-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #ffeb3b;
-  box-shadow: 0 0 18px rgba(255,235,59,.9);
-}
-
-.day-info {
-  font-size: 14px;
-  line-height: 1.3;
-}
-
-.wifi {
-  font-size: 14px;
-  opacity: .9;
-}
-
-/* ===== GRID ===== */
-.grid {
-  flex: 1;
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-/* ===== CARD ===== */
-.card {
-  background: rgba(255,255,255,.15);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.label {
-  font-size: 14px;
-  opacity: .9;
-}
-
-.value {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-/* ===== CLOCK ===== */
-.clock {
-  grid-column: span 2;
-  background: rgba(0,0,0,.25);
-  font-size: clamp(44px, 8vw, 72px);
-  font-weight: bold;
-  letter-spacing: 3px;
   justify-content: center;
 }
 
-/* ===== LANDSCAPE HP ===== */
-@media (max-height: 420px) {
-  .dashboard {
-    max-height: 100vh;
-    border-radius: 0;
-  }
+.clock {
+  font-size: 4.5rem;
+  letter-spacing: 4px;
+  text-shadow: var(--glow);
+}
+
+.date {
+  font-size: 1.2rem;
+  margin-top: 10px;
+  opacity: 0.85;
+}
+
+.right {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.panel {
+  border: 1px solid rgba(0,234,255,0.4);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: var(--glow);
+  background: rgba(0,40,60,0.25);
+}
+
+.label {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  animation: pulse 2.5s infinite;
+}
+
+.value {
+  font-size: 1.3rem;
+  margin-top: 4px;
+  text-shadow: var(--glow);
+}
+
+canvas {
+  width: 100%;
+  height: 60px;
+  margin-top: 6px;
+  filter: drop-shadow(0 0 6px #00eaff);
+}
+
+/* animasi ikon hologram */
+@keyframes pulse {
+  0% { opacity: 0.6; text-shadow: 0 0 4px #00eaff; }
+  50% { opacity: 1; text-shadow: 0 0 14px #00eaff; }
+  100% { opacity: 0.6; text-shadow: 0 0 4px #00eaff; }
+}
+
+/* scan hologram */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.04) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  animation: scan 6s linear infinite;
+}
+
+@keyframes scan {
+  from { background-position-y: 0; }
+  to { background-position-y: 100%; }
 }
 </style>
 </head>
 
 <body>
-<div class="dashboard">
-  <div class="top">
-    <div class="sun">
-      <div class="sun-icon"></div>
-      <div class="day-info">
-        <div id="day">Day 1</div>
-        <div id="uptime">0 hrs 0 min</div>
-      </div>
-    </div>
-    <div class="wifi">🛜 Online</div>
+<div class="container">
+
+  <!-- KIRI -->
+  <div class="left">
+    <div class="clock" id="clock">00:00:00</div>
+    <div class="date" id="date">-</div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <div class="label">🌡️ Suhu</div>
-      <div class="value" id="temp">-- °C</div>
+  <!-- KANAN -->
+  <div class="right">
+
+    <div class="panel">
+      <div class="label">🌤 Cuaca</div>
+      <div class="value">Cerah Berawan</div>
     </div>
 
-    <div class="card">
-      <div class="label">🌬 Tekanan</div>
-      <div class="value" id="kpa">-- kPa</div>
+    <div class="panel">
+      <div class="label">📍 Lokasi GPS</div>
+      <div class="value" id="gps">Menunggu...</div>
     </div>
 
-    <div class="card">
-      <div class="label">💧 Kelembapan</div>
-      <div class="value" id="humidity">-- %</div>
+    <div class="panel">
+      <div class="label">🫁 Oksigen (O₂)</div>
+      <div class="value" id="oxygen">20.0%</div>
     </div>
 
-    <div class="card">
-      <div class="label">🌀 CO₂</div>
-      <div class="value" id="co2">-- ppm</div>
+    <div class="panel">
+      <div class="label">⛰ Ketinggian</div>
+      <div class="value">800 mdpl</div>
     </div>
 
-    <div class="card clock" id="clock">00:00:00</div>
+    <div class="panel">
+      <div class="label">🌡 Suhu</div>
+      <div class="value" id="temp">65% | 32°C</div>
+      <canvas id="tempChart" width="200" height="60"></canvas>
+    </div>
+
   </div>
 </div>
 
 <script>
-/* ===== JAM & UPTIME ===== */
-const startTime = Date.now();
-
-function dayOfYear() {
+/* JAM & TANGGAL */
+function updateTime() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  return Math.floor((now - start) / 86400000) + 1;
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('id-ID');
+  document.getElementById('date').textContent =
+    now.toLocaleDateString('id-ID', {
+      weekday:'long', year:'numeric', month:'long', day:'numeric'
+    });
+}
+setInterval(updateTime,1000);
+updateTime();
+
+/* GPS */
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(pos => {
+    document.getElementById('gps').textContent =
+      pos.coords.latitude.toFixed(5) + ', ' +
+      pos.coords.longitude.toFixed(5);
+  });
 }
 
-function updateClock() {
-  const now = new Date();
-  clock.textContent =
-    now.toLocaleTimeString('id-ID', { hour12: false });
+/* OKSIGEN */
+let oxygen = 20.0;
+setInterval(() => {
+  oxygen += (Math.random()-0.5)*0.3;
+  oxygen = Math.min(21.1, Math.max(19.0, oxygen));
+  document.getElementById('oxygen').textContent =
+    oxygen.toFixed(1)+'%';
+},1200);
 
-  day.textContent = `Day ${dayOfYear()}`;
+/* SUHU + GRAFIK */
+const canvas = document.getElementById("tempChart");
+const ctx = canvas.getContext("2d");
 
-  const diff = Date.now() - startTime;
-  uptime.textContent =
-    `${Math.floor(diff/3600000)} hrs ${Math.floor(diff%3600000/60000)} min`;
+let tempPercent = 65;
+let tempC = 32;
+let history = Array(30).fill(tempC);
+
+function drawChart() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.beginPath();
+  ctx.strokeStyle="#00eaff";
+  ctx.lineWidth=2;
+  ctx.shadowColor="#00eaff";
+  ctx.shadowBlur=10;
+
+  history.forEach((v,i)=>{
+    const x=(i/(history.length-1))*canvas.width;
+    const y=canvas.height-((v-24)/12)*canvas.height;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
 }
 
-/* ===== SENSOR HALUS ===== */
-function smooth(base, range, digit=1) {
-  return (base + Math.random()*range).toFixed(digit);
-}
+setInterval(()=>{
+  tempPercent += (Math.random()-0.5)*4;
+  tempPercent = Math.min(85, Math.max(40, tempPercent));
 
-function updateSensors() {
-  temp.textContent = `${smooth(25,2)} °C`;
-  kpa.textContent = `${smooth(100,1)} kPa`;
-  humidity.textContent = `${smooth(60,5,0)} %`;
-  co2.textContent = `${smooth(400,50,0)} ppm`;
-}
+  tempC += (Math.random()-0.5)*0.6;
+  tempC = Math.min(36, Math.max(24, tempC));
 
-/* ===== CEGAH LAYAR MATI ===== */
-if ('wakeLock' in navigator) {
-  navigator.wakeLock.request('screen').catch(()=>{});
-}
+  history.push(tempC); history.shift();
 
-/* ===== INTERVAL ===== */
-setInterval(updateClock, 1000);
-setInterval(updateSensors, 2500);
-updateClock();
-updateSensors();
+  document.getElementById("temp").textContent =
+    Math.round(tempPercent)+"% | "+tempC.toFixed(1)+"°C";
+  drawChart();
+},1500);
+
+/* CEGAH LAYAR MATI */
+let wakeLock=null;
+async function aktifkanWakeLock(){
+  try{
+    wakeLock = await navigator.wakeLock.request('screen');
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') aktifkanWakeLock();
+});
+aktifkanWakeLock();
 </script>
+
 </body>
 </html>
+
 
